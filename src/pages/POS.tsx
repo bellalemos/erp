@@ -1,13 +1,13 @@
 const cartItems = [
-  { name: "Industrial Steel Desk Lamp - Matte Black", sku: "88291-BL", qty: 1, unitPrice: "R$ 249,00", total: "R$ 249,00" },
-  { name: "Ergonomic Office Chair - Premium Mesh", sku: "11029-GR", qty: 2, unitPrice: "R$ 1.150,00", total: "R$ 2.300,00" },
+  { name: "Luminária Industrial de Aço - Preto Fosco", sku: "88291-BL", qty: 1, unitPrice: "R$ 249,00", total: "R$ 249,00" },
+  { name: "Cadeira Ergonômica - Mesh Premium", sku: "11029-GR", qty: 2, unitPrice: "R$ 1.150,00", total: "R$ 2.300,00" },
 ];
 
 const paymentMethods = [
-  { label: "Credit Card", active: true },
-  { label: "Cash", active: false },
+  { label: "Cartão de Crédito", active: true },
+  { label: "Dinheiro", active: false },
   { label: "PIX", active: false },
-  { label: "Store Credit", active: false },
+  { label: "Crédito da Loja", active: false },
 ];
 
 export default function POS() {
@@ -19,14 +19,14 @@ export default function POS() {
           {/* Product Entry */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xs font-black uppercase tracking-widest">Product Entry</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest">Entrada de Produto</h3>
               <button className="text-[10px] font-black uppercase tracking-widest text-outline hover:text-primary transition-colors">
-                ⊞ Create Personalized Catalog
+                ⊞ Criar Catálogo Personalizado
               </button>
             </div>
             <input
               className="w-full bg-card ghost-border p-4 text-sm placeholder:text-outline focus:outline-none focus:ring-0 border-b-2 border-transparent focus:border-primary"
-              placeholder="Scan barcode or type product name..."
+              placeholder="Escaneie o código de barras ou digite o nome do produto..."
             />
           </div>
 
@@ -34,9 +34,9 @@ export default function POS() {
           <table className="w-full text-left mb-8">
             <thead>
               <tr className="bg-surface-container-high text-[10px] font-black uppercase tracking-widest text-outline">
-                <th className="px-6 py-3">Item Description</th>
-                <th className="px-6 py-3 text-center">Quantity</th>
-                <th className="px-6 py-3 text-right">Unit Price</th>
+                <th className="px-6 py-3">Descrição do Item</th>
+                <th className="px-6 py-3 text-center">Quantidade</th>
+                <th className="px-6 py-3 text-right">Preço Unit.</th>
                 <th className="px-6 py-3 text-right">Total</th>
               </tr>
             </thead>
@@ -63,40 +63,40 @@ export default function POS() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-4 gap-4 mb-8">
-            {["Apply Coupon", "Identify Client", "Check Stock"].map((action) => (
+            {["Aplicar Cupom", "Identificar Cliente", "Consultar Estoque"].map((action) => (
               <button key={action} className="ghost-border-hover py-4 px-4 text-center hover:bg-surface-container-high transition-colors">
                 <span className="text-[10px] font-black uppercase tracking-widest">{action}</span>
               </button>
             ))}
             <button className="ghost-border-hover py-4 px-4 text-center hover:bg-surface-container-high transition-colors">
-              <span className="text-[10px] font-black uppercase tracking-widest text-error">Void Sale</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-error">Cancelar Venda</span>
             </button>
           </div>
 
           {/* Bottom Cards */}
           <div className="grid grid-cols-3 gap-6">
             <div className="bg-surface-container-low ghost-border p-6">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-outline">Quick Catalog Generator</span>
-              <h4 className="text-lg font-black tracking-tighter mt-1">Personalized Offers</h4>
-              <p className="text-xs text-outline mt-2 leading-relaxed">Generate a temporary digital catalog based on this customer's purchase history and current selection.</p>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-outline">Gerador de Catálogo</span>
+              <h4 className="text-lg font-black tracking-tighter mt-1">Ofertas Personalizadas</h4>
+              <p className="text-xs text-outline mt-2 leading-relaxed">Gere um catálogo digital temporário baseado no histórico de compras do cliente e na seleção atual.</p>
               <button className="w-full mt-4 ghost-border-hover py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors">
-                Generate & Copy Link
+                Gerar & Copiar Link
               </button>
             </div>
             <div className="bg-surface-container-low ghost-border p-6">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-outline">Active Promotions</span>
-              <h4 className="text-lg font-black tracking-tighter mt-1">Mid-Season Sale</h4>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-outline">Promoções Ativas</span>
+              <h4 className="text-lg font-black tracking-tighter mt-1">Liquidação de Temporada</h4>
               <div className="text-3xl font-black tracking-tighter mt-2">20% OFF</div>
-              <div className="text-[10px] text-outline uppercase font-bold">All Lighting Fixtures</div>
+              <div className="text-[10px] text-outline uppercase font-bold">Todos os Itens de Iluminação</div>
             </div>
             <div className="bg-primary text-primary-foreground p-6 flex flex-col justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Last Transaction</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">Última Transação</span>
                 <div className="text-sm font-bold mt-1">#ORD-20948</div>
                 <div className="text-2xl font-black tracking-tighter">R$ 4.120,50</div>
               </div>
               <button className="text-[10px] font-black uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity text-left mt-4">
-                View History →
+                Ver Histórico →
               </button>
             </div>
           </div>
@@ -111,11 +111,11 @@ export default function POS() {
               <span className="font-bold">R$ 2.549,00</span>
             </div>
             <div className="flex justify-between text-xs mb-6">
-              <span className="font-bold uppercase">Discount</span>
+              <span className="font-bold uppercase">Desconto</span>
               <span className="font-bold">- R$ 0,00</span>
             </div>
             <div className="text-center border-t border-outline-variant/20 pt-6">
-              <span className="text-[10px] font-black uppercase tracking-widest text-outline">Total Amount</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-outline">Valor Total</span>
               <div className="text-xs text-outline">R$</div>
               <div className="text-4xl font-black tracking-tighter">2.549,00</div>
             </div>
@@ -123,7 +123,7 @@ export default function POS() {
 
           {/* Payment Methods */}
           <div className="ghost-border p-6">
-            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Payment Method</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Forma de Pagamento</span>
             <div className="grid grid-cols-2 gap-3 mt-4">
               {paymentMethods.map((m) => (
                 <button
@@ -142,7 +142,7 @@ export default function POS() {
 
           {/* Fiscal Document */}
           <div className="bg-surface-container-low ghost-border p-6">
-            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Fiscal Document</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Documento Fiscal</span>
             <div className="flex gap-3 mt-4">
               <button className="flex-1 ghost-border-hover py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors">
                 Emitir NFC-e
@@ -153,13 +153,13 @@ export default function POS() {
             </div>
             <label className="flex items-center gap-2 mt-4 text-[10px] text-outline">
               <input type="checkbox" className="w-4 h-4 border-2 border-outline" />
-              Send invoice by e-mail automatically
+              Enviar nota fiscal por e-mail automaticamente
             </label>
           </div>
 
           {/* Finalize */}
           <button className="w-full bg-primary text-primary-foreground py-5 text-sm font-black uppercase tracking-[0.3em] hover:opacity-90 transition-opacity">
-            Finalize Transaction
+            Finalizar Venda
           </button>
         </div>
       </div>

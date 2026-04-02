@@ -5,19 +5,19 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/inventory", label: "Inventory", icon: Package },
-  { to: "/crm", label: "CRM", icon: Users },
-  { to: "/pos", label: "POS", icon: ShoppingCart },
-  { to: "/finance", label: "Finance", icon: DollarSign },
+  { to: "/", label: "Painel", icon: LayoutDashboard },
+  { to: "/inventory", label: "Estoque", icon: Package },
+  { to: "/crm", label: "Clientes", icon: Users },
+  { to: "/pos", label: "Caixa", icon: ShoppingCart },
+  { to: "/finance", label: "Financeiro", icon: DollarSign },
 ];
 
 const topNavTabs: Record<string, { label: string; tabs: string[] }> = {
-  "/": { label: "", tabs: ["Inbound"] },
-  "/inventory": { label: "Inventory Control", tabs: ["Inbound", "Outbound", "Reports"] },
-  "/crm": { label: "Ledger CRM", tabs: ["Inbound", "Outbound", "Reports"] },
-  "/pos": { label: "Ledger CRM", tabs: ["Inbound", "Outbound", "Reports"] },
-  "/finance": { label: "", tabs: ["Inbound", "Outbound", "Reports"] },
+  "/": { label: "", tabs: ["Entrada"] },
+  "/inventory": { label: "Controle de Estoque", tabs: ["Entrada", "Saída", "Relatórios"] },
+  "/crm": { label: "Gestão de Clientes", tabs: ["Entrada", "Saída", "Relatórios"] },
+  "/pos": { label: "Gestão de Clientes", tabs: ["Entrada", "Saída", "Relatórios"] },
+  "/finance": { label: "", tabs: ["Entrada", "Saída", "Relatórios"] },
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="px-5 text-lg font-black tracking-tighter text-sidebar-primary border-b border-sidebar-border pb-4 mb-6">
           Absolute Ledger
           <div className="text-[10px] font-normal tracking-widest text-sidebar-foreground mt-1">
-            Retail ERP v1.0
+            ERP Varejo v1.0
           </div>
         </div>
 
@@ -58,15 +58,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="mt-auto pt-4 border-t border-sidebar-border space-y-1">
           <a href="#" className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-primary px-5 py-3 transition-colors hover:bg-sidebar-accent/50">
             <Settings size={20} />
-            <span>Settings</span>
+            <span>Configurações</span>
           </a>
           <a href="#" className="flex items-center gap-3 text-sidebar-foreground hover:text-sidebar-primary px-5 py-3 transition-colors hover:bg-sidebar-accent/50">
             <HelpCircle size={20} />
-            <span>Support</span>
+            <span>Suporte</span>
           </a>
           <div className="px-5 mt-6">
             <button className="w-full bg-sidebar-primary text-sidebar-primary-foreground py-3 text-center font-black active:scale-95 transition-transform">
-              OPEN CASHIER
+              ABRIR CAIXA
             </button>
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" size={16} />
               <input
                 className="bg-transparent border-none focus:ring-0 focus:outline-none pl-10 text-sm w-64 placeholder:text-outline"
-                placeholder="Search data..."
+                placeholder="Buscar dados..."
                 type="text"
               />
             </div>
@@ -103,7 +103,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-6">
             <button className="bg-primary text-primary-foreground px-4 py-2 text-xs font-bold uppercase tracking-tight active:scale-95 transition-transform">
-              New Transaction
+              Nova Transação
             </button>
             <div className="flex items-center gap-4 text-outline">
               <Bell size={20} className="cursor-pointer hover:text-on-surface transition-colors" />
