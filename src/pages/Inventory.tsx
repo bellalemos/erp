@@ -1,181 +1,137 @@
-import { Search } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, Package, Activity } from "lucide-react";
 
-const inventory = [
-  { sku: "AL-MOD-001", name: "Camiseta Oversized Tech-Fabric", category: "Vestuário / Tops", stock: 142, stockPct: 85, price: "R$ 45,00", lowStock: false },
-  { sku: "AL-ACC-492", name: "Relógio Minimalista Estruturado", category: "Acessórios / Relógios", stock: 8, stockPct: 15, price: "R$ 189,00", lowStock: true },
-  { sku: "AL-MOD-204", name: "Jeans Selvedge Cru", category: "Vestuário / Calças", stock: 42, stockPct: 45, price: "R$ 120,00", lowStock: false },
+const kpis = [
+  { label: "Total de SKUs", value: "1.240", icon: Package, chip: null },
+  { label: "Itens Críticos", value: "18", icon: AlertTriangle, chip: "chip-error" },
+  { label: "Movimentações Hoje", value: "47", icon: Activity, chip: "chip-info" },
 ];
 
-const movements = [
-  { type: "in", sku: "AL-MOD-001", desc: "+50 Unidades do Fornecedor: Nord-Textiles", date: "22/05 14:30" },
-  { type: "out", sku: "AL-ACC-492", desc: "-02 Unidades Vendidas na Shopee", date: "22/05 12:15" },
-  { type: "out", sku: "AL-MOD-204", desc: "-01 Unidade Vendida no Site", date: "22/05 09:44" },
+const estoqueItems = [
+  { produto: "Luminária Mesa LED", sku: "LUM-001", categoria: "Eletrônicos", minimo: 10, atual: 42, status: "OK" },
+  { produto: "Camiseta Básica Preta", sku: "VES-012", categoria: "Vestuário", minimo: 20, atual: 8, status: "CRÍTICO" },
+  { produto: "Cadeira Escritório Pro", sku: "MOV-003", categoria: "Móveis", minimo: 5, atual: 15, status: "OK" },
+  { produto: "Fone Bluetooth Sport", sku: "ELE-045", categoria: "Eletrônicos", minimo: 15, atual: 3, status: "CRÍTICO" },
+  { produto: "Bolsa Couro Sintético", sku: "ACE-022", categoria: "Acessórios", minimo: 10, atual: 12, status: "ALERTA" },
+  { produto: "Mesa Lateral Madeira", sku: "MOV-018", categoria: "Móveis", minimo: 8, atual: 5, status: "CRÍTICO" },
 ];
+
+const historico = [
+  { tipo: "entrada", produto: "LUM-001", qtd: "+50 un.", operador: "Maria S.", data: "09/04 14:30" },
+  { tipo: "saida", produto: "VES-012", qtd: "-12 un.", operador: "João P.", data: "09/04 11:15" },
+  { tipo: "entrada", produto: "MOV-003", qtd: "+20 un.", operador: "Ana O.", data: "08/04 16:45" },
+  { tipo: "saida", produto: "ELE-045", qtd: "-8 un.", operador: "Carlos M.", data: "08/04 09:30" },
+];
+
+function statusChip(status: string) {
+  switch (status) {
+    case "OK": return "chip-success";
+    case "ALERTA": return "chip-warning";
+    case "CRÍTICO": return "chip-error";
+    default: return "chip-info";
+  }
+}
 
 export default function Inventory() {
+  const [tipoAjuste, setTipoAjuste] = useState<"entrada" | "saida">("entrada");
+
   return (
     <div>
-      {/* Header */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase">Livro de Estoque</h1>
-          <p className="text-outline font-medium mt-1">Sincronização de estoque em tempo real entre canais globais.</p>
-        </div>
-        <div className="flex gap-4">
-          <button className="bg-primary text-primary-foreground px-6 py-3 flex items-center gap-2 font-bold uppercase text-xs tracking-widest active:scale-95 transition-all">
-            ⊕ Registrar Entrada
-          </button>
-          <button className="ghost-border-hover px-6 py-3 flex items-center gap-2 font-bold uppercase text-xs tracking-widest active:scale-95 transition-all">
-            ⊖ Registrar Saída
-          </button>
-        </div>
+      <div className="mb-8">
+        <h1 className="font-heading text-3xl font-bold text-foreground">Controle de Estoque</h1>
+        <p className="text-on-surface-muted text-sm mt-1">Monitoramento e ajustes de inventário em tempo real</p>
       </div>
 
-      {/* Bento Cards */}
-      <div className="grid grid-cols-12 gap-6 mb-12">
-        <div className="col-span-4 bg-surface-container-low ghost-border p-6 flex flex-col justify-between h-48">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Sincronização Omnichannel</span>
-          </div>
-          <div className="space-y-3">
-            {["Site Principal", "Mercado Livre"].map((ch) => (
-              <div key={ch} className="flex items-center justify-between">
-                <span className="text-xs font-bold">{ch}</span>
-                <span className="px-2 py-0.5 bg-success/10 text-success text-[10px] font-black uppercase">Ativo</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="card-surface p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-primary">
+                <kpi.icon size={20} />
               </div>
-            ))}
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold">Shopee Global</span>
-              <span className="px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-black uppercase">Atualizando</span>
+              {kpi.chip && <span className={`chip ${kpi.chip} text-xs`}>Atenção</span>}
+            </div>
+            <p className="text-on-surface-muted text-xs font-medium uppercase tracking-wide">{kpi.label}</p>
+            <p className="font-heading text-2xl font-bold text-foreground mt-1">{kpi.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 card-surface p-6">
+          <h2 className="font-heading text-lg font-semibold text-foreground mb-5">Níveis de Estoque</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-on-surface-muted text-xs uppercase tracking-wide">
+                  <th className="text-left py-3 font-medium">Produto / SKU</th>
+                  <th className="text-center py-3 font-medium">Categoria</th>
+                  <th className="text-center py-3 font-medium">Mín.</th>
+                  <th className="text-center py-3 font-medium">Atual</th>
+                  <th className="text-center py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {estoqueItems.map((item) => (
+                  <tr key={item.sku}>
+                    <td className="py-4">
+                      <p className="font-medium text-foreground">{item.produto}</p>
+                      <p className="text-xs text-on-surface-muted">{item.sku}</p>
+                    </td>
+                    <td className="py-4 text-center"><span className="chip chip-info">{item.categoria}</span></td>
+                    <td className="py-4 text-center text-on-surface-muted">{item.minimo}</td>
+                    <td className={`py-4 text-center font-semibold ${item.atual <= item.minimo ? 'value-negative' : 'text-foreground'}`}>{item.atual}</td>
+                    <td className="py-4 text-center"><span className={`chip ${statusChip(item.status)}`}>{item.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-5">
+          <div className="card-surface p-5">
+            <h3 className="font-heading text-base font-semibold text-foreground mb-4">Ajuste de Estoque</h3>
+            <div className="space-y-4">
+              <select className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none">
+                <option>Selecionar Produto</option>
+                {estoqueItems.map(i => <option key={i.sku}>{i.produto} ({i.sku})</option>)}
+              </select>
+              <div className="flex gap-2">
+                <button onClick={() => setTipoAjuste("entrada")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${tipoAjuste === "entrada" ? "bg-tertiary/10 text-tertiary" : "bg-surface-low text-on-surface-muted"}`}>
+                  <ArrowDownCircle size={16} /> Entrada
+                </button>
+                <button onClick={() => setTipoAjuste("saida")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${tipoAjuste === "saida" ? "bg-error/10 text-error" : "bg-surface-low text-on-surface-muted"}`}>
+                  <ArrowUpCircle size={16} /> Saída
+                </button>
+              </div>
+              <input type="number" placeholder="Quantidade" className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none" />
+              <input placeholder="Motivo do ajuste" className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none" />
+              <button className="btn-primary w-full text-sm">Confirmar Ajuste</button>
             </div>
           </div>
-        </div>
 
-        <div className="col-span-5 bg-surface-container-low ghost-border p-6 flex flex-col justify-between h-48">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">Geração de Etiquetas</span>
-          <div>
-            <p className="text-xs text-outline leading-relaxed mb-4">Imprima etiquetas térmicas de alta densidade para a seleção atual. Compatível com protocolos Zebra e Dymo.</p>
-            <button className="w-full ghost-border-hover py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-colors">
-              Gerar Etiquetas Selecionadas
-            </button>
-          </div>
-        </div>
-
-        <div className="col-span-3 bg-error-container p-6 flex flex-col justify-between h-48">
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-error-container">Alertas Críticos</span>
-          <div>
-            <div className="text-2xl font-black text-on-error-container">12</div>
-            <div className="text-[10px] font-bold uppercase text-on-error-container/70">SKUs com Estoque Baixo</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Inventory Table */}
-      <section className="bg-card ghost-border">
-        <div className="p-6 border-b border-outline-variant/20 flex items-center justify-between gap-4">
-          <div className="flex-1 max-w-md relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" size={16} />
-            <input
-              className="w-full bg-surface border-none border-b-2 border-outline focus:border-primary focus:ring-0 text-[11px] font-bold tracking-widest pl-10 py-3 uppercase placeholder:text-outline"
-              placeholder="Buscar SKU, nome do produto ou código de barras..."
-              type="text"
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <select className="bg-surface-container ghost-border text-[11px] font-bold uppercase tracking-widest py-2 px-4 focus:ring-0 focus:outline-none">
-              <option>Todos os Níveis</option>
-              <option>Estoque Baixo</option>
-              <option>Sem Estoque</option>
-            </select>
-          </div>
-        </div>
-
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-surface-container-high border-b border-outline-variant/20">
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline w-10">
-                <input type="checkbox" className="w-4 h-4 border-2 border-outline" />
-              </th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline">Código SKU</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline">Nome do Produto</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline">Nível de Estoque</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline text-right">Preço Unit.</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-outline text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-outline-variant/10">
-            {inventory.map((item) => (
-              <tr key={item.sku} className="hover:bg-surface-container-low transition-colors group">
-                <td className="px-6 py-5"><input type="checkbox" className="w-4 h-4 border-2 border-outline" /></td>
-                <td className="px-6 py-5 font-mono text-[11px] font-bold">{item.sku}</td>
-                <td className="px-6 py-5">
-                  <div className="text-xs font-bold uppercase tracking-tight">{item.name}</div>
-                  <div className="text-[9px] text-outline uppercase mt-0.5">{item.category}</div>
-                </td>
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 h-1.5 bg-surface-container overflow-hidden">
-                      <div className={`h-full ${item.lowStock ? "bg-error" : "bg-primary"}`} style={{ width: `${item.stockPct}%` }}></div>
+          <div className="card-surface p-5">
+            <h3 className="font-heading text-base font-semibold text-foreground mb-4">Histórico Recente</h3>
+            <div className="space-y-3">
+              {historico.map((h, i) => (
+                <div key={i} className="flex items-center justify-between py-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${h.tipo === 'entrada' ? 'bg-tertiary/10 text-tertiary' : 'bg-error/10 text-error'}`}>
+                      {h.tipo === 'entrada' ? <ArrowDownCircle size={14} /> : <ArrowUpCircle size={14} />}
                     </div>
-                    <span className={`text-xs font-bold ${item.lowStock ? "text-error" : ""}`}>{String(item.stock).padStart(2, "0")}</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{h.produto}</p>
+                      <p className="text-xs text-on-surface-muted">{h.operador} · {h.data}</p>
+                    </div>
                   </div>
-                </td>
-                <td className="px-6 py-5 text-right font-mono text-xs font-bold">{item.price}</td>
-                <td className="px-6 py-5 text-right">
-                  <span className="text-[10px] font-bold text-outline opacity-0 group-hover:opacity-100 transition-opacity uppercase cursor-pointer hover:text-primary">Editar</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="p-6 border-t border-outline-variant/20 flex items-center justify-between">
-          <span className="text-[10px] font-bold uppercase text-outline">Exibindo 1-25 de 1.240 itens</span>
-          <div className="flex items-center gap-2">
-            <button className="p-2 ghost-border hover:bg-surface-container-high transition-colors text-xs">‹</button>
-            <span className="text-[11px] font-bold px-4">Página 1 / 50</span>
-            <button className="p-2 ghost-border hover:bg-surface-container-high transition-colors text-xs">›</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Ledger Movements */}
-      <section className="mt-12 grid grid-cols-12 gap-8">
-        <div className="col-span-8">
-          <h2 className="text-lg font-black uppercase tracking-widest mb-6">Movimentações Recentes</h2>
-          <div className="space-y-4">
-            {movements.map((m, i) => (
-              <div key={i} className={`flex items-center justify-between p-4 bg-surface-container-low border-l-4 ${m.type === "in" ? "border-primary" : "border-outline-variant"}`}>
-                <div>
-                  <div className="text-[11px] font-black uppercase tracking-tight">{m.type === "in" ? "Entrada" : "Saída"} de Estoque: {m.sku}</div>
-                  <div className="text-[10px] text-outline uppercase">{m.desc}</div>
+                  <span className={`text-sm font-semibold ${h.tipo === 'entrada' ? 'value-positive' : 'value-negative'}`}>{h.qtd}</span>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-outline">{m.date}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="col-span-4">
-          <div className="bg-primary text-primary-foreground p-6">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-4">Impressão de Código de Barras</h3>
-            <p className="text-[10px] opacity-70 leading-relaxed mb-6">Configure o layout para os 3 itens selecionados. O sistema gerará um PDF otimizado para rolos térmicos 50×30mm.</p>
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between border-b border-primary-foreground/20 pb-2">
-                <span className="text-[10px] font-bold uppercase">Itens Selecionados</span>
-                <span className="text-[10px] font-mono font-bold">03</span>
-              </div>
-              <div className="flex justify-between border-b border-primary-foreground/20 pb-2">
-                <span className="text-[10px] font-bold uppercase">Cópias por SKU</span>
-                <span className="text-[10px] font-mono font-bold">10</span>
-              </div>
+              ))}
             </div>
-            <button className="w-full bg-primary-foreground text-primary py-3 text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-opacity">
-              Iniciar Impressão
-            </button>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

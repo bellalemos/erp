@@ -1,143 +1,114 @@
-import heroImage from "@/assets/hero-architecture.jpg";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, BarChart3, Target } from "lucide-react";
 
-const salesData = [
-  { name: "Jaqueta de Couro Midnight", sku: "LDG-4421", qty: 84, revenue: "R$ 12.600,00" },
-  { name: "Echarpe de Seda Minimalista", sku: "LDG-2190", qty: 156, revenue: "R$ 9.360,00" },
-  { name: "Vaso de Concreto Brutalista", sku: "LDG-8812", qty: 42, revenue: "R$ 8.190,00" },
-  { name: "Bolsa Estruturada", sku: "LDG-3301", qty: 38, revenue: "R$ 7.600,00" },
-  { name: "Conjunto de Copos Obsidian", sku: "LDG-1102", qty: 92, revenue: "R$ 6.440,00" },
+const kpis = [
+  { label: "Faturamento Diário", value: "R$ 4.280", change: "+12.5%", positive: true, icon: DollarSign, meta: "Meta: R$ 5.000" },
+  { label: "Faturamento Semanal", value: "R$ 28.640", change: "+8.3%", positive: true, icon: Calendar, meta: "Meta: R$ 30.000" },
+  { label: "Faturamento Mensal", value: "R$ 124.500", change: "-2.1%", positive: false, icon: BarChart3, meta: "Meta: R$ 150.000" },
+  { label: "Faturamento Anual (YTD)", value: "R$ 1.480.000", change: "+15.7%", positive: true, icon: Target, meta: "Meta: R$ 2.000.000" },
 ];
 
-const activities = [
-  { title: "Nova Venda Registrada", desc: "#ORD-9901 para Elena Rostova", time: "2 min atrás", filled: true },
-  { title: "Alerta de Estoque", desc: "SKU: LDG-4421 atingiu limite mínimo", time: "45 min atrás", filled: false },
-  { title: "Cadastro de Cliente", desc: "Marcus Aurelius adicionado ao CRM", time: "2 horas atrás", filled: true },
-  { title: "Ajuste de Caixa", desc: "Fundo de troco verificado pelo Admin", time: "4 horas atrás", filled: true },
+const weeklyBars = [
+  { label: "Seg", value: 65 },
+  { label: "Ter", value: 80 },
+  { label: "Qua", value: 45 },
+  { label: "Qui", value: 90 },
+  { label: "Sex", value: 72 },
+  { label: "Sáb", value: 95 },
+  { label: "Dom", value: 40 },
+];
+
+const transactions = [
+  { name: "Maria Silva", category: "Vestuário", value: "+R$ 450,00", positive: true },
+  { name: "João Santos", category: "Eletrônicos", value: "+R$ 1.200,00", positive: true },
+  { name: "Devolução #1042", category: "Vestuário", value: "-R$ 89,90", positive: false },
+  { name: "Ana Oliveira", category: "Acessórios", value: "+R$ 320,00", positive: true },
+  { name: "Carlos Mendes", category: "Móveis", value: "+R$ 2.800,00", positive: true },
 ];
 
 export default function Dashboard() {
   return (
     <div>
-      {/* Page Header */}
-      <div className="mb-10">
-        <h1 className="text-3xl font-black tracking-tighter uppercase mb-1">Painel Executivo</h1>
-        <p className="text-sm text-outline font-medium uppercase tracking-widest">Visão Geral da Loja & Métricas de Desempenho</p>
+      <div className="mb-8">
+        <h1 className="font-heading text-3xl font-bold text-foreground">Dashboard Executivo</h1>
+        <p className="text-on-surface-muted text-sm mt-1">Visão geral de desempenho e métricas da loja</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-surface-container-low p-6 ghost-border">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Vendas Totais (Mês)</span>
-          </div>
-          <div className="text-4xl font-black tracking-tighter mb-2">R$ 142.850,00</div>
-          <div className="text-[10px] font-bold text-success uppercase flex items-center gap-1">
-            ↗ 12,4% vs mês anterior
-          </div>
-        </div>
-
-        <div className="bg-surface-container-low p-6 ghost-border">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-outline">Novos Clientes</span>
-          </div>
-          <div className="text-4xl font-black tracking-tighter mb-2">482</div>
-          <div className="text-[10px] font-bold text-outline uppercase">Meta de crescimento: 500</div>
-        </div>
-
-        <div className="bg-primary p-6 text-primary-foreground">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Status do Caixa</span>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-success"></div>
-              <span className="text-[10px] font-black uppercase">Ativo</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="card-surface p-5 relative">
+            <div className={`absolute top-4 right-4 chip ${kpi.positive ? 'chip-success' : 'chip-error'} text-xs`}>
+              {kpi.positive ? <TrendingUp size={12} className="mr-1" /> : <TrendingDown size={12} className="mr-1" />}
+              {kpi.change}
             </div>
+            <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center text-primary mb-3">
+              <kpi.icon size={20} />
+            </div>
+            <p className="text-on-surface-muted text-xs font-medium uppercase tracking-wide">{kpi.label}</p>
+            <p className="font-heading text-2xl font-bold text-foreground mt-1">{kpi.value}</p>
+            <p className="text-on-surface-muted text-xs mt-2">{kpi.meta}</p>
           </div>
-          <div className="text-4xl font-black tracking-tighter mb-2 uppercase">Aberto</div>
-          <div className="text-[10px] font-bold opacity-60 uppercase">Sessão: #88219 - Início 08:45</div>
-        </div>
+        ))}
       </div>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Ranking Table */}
-        <div className="lg:col-span-8">
-          <div className="bg-card ghost-border">
-            <div className="bg-surface-container-high px-6 py-4 flex justify-between items-center border-b border-outline-variant/20">
-              <h3 className="text-xs font-black uppercase tracking-widest">Ranking: Mais Vendidos</h3>
+      {/* Charts & Transactions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Bar Chart */}
+        <div className="lg:col-span-2 card-surface p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-heading text-lg font-semibold text-foreground">Tendências de Receita</h2>
+              <p className="text-on-surface-muted text-xs mt-0.5">Desempenho semanal</p>
             </div>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-surface-container text-[10px] font-black uppercase tracking-widest text-outline">
-                  <th className="px-6 py-3">Nome do Produto</th>
-                  <th className="px-6 py-3">SKU</th>
-                  <th className="px-6 py-3 text-right">Quantidade</th>
-                  <th className="px-6 py-3 text-right">Receita</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {salesData.map((item) => (
-                  <tr key={item.sku} className="border-b border-outline-variant/10 hover:bg-surface-container-highest transition-colors cursor-default">
-                    <td className="px-6 py-4 font-bold">{item.name}</td>
-                    <td className="px-6 py-4 text-xs font-mono">{item.sku}</td>
-                    <td className="px-6 py-4 text-right">{item.qty}</td>
-                    <td className="px-6 py-4 text-right font-bold">{item.revenue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="flex gap-1 bg-surface-low rounded-lg p-1">
+              <button className="btn-primary text-xs !py-1.5 !px-3 !rounded-md">Semanal</button>
+              <button className="text-xs py-1.5 px-3 text-on-surface-muted rounded-md hover:bg-surface-lowest transition-colors">Mensal</button>
+            </div>
+          </div>
+          <div className="flex items-end gap-3 h-48">
+            {weeklyBars.map((bar) => (
+              <div key={bar.label} className="flex-1 flex flex-col items-center gap-2">
+                <div className="w-full rounded-t-md" style={{
+                  height: `${bar.value * 1.8}px`,
+                  background: bar.value >= 90 ? 'hsl(160, 83%, 34%)' : 'hsl(211, 100%, 39%)',
+                  opacity: bar.value >= 90 ? 1 : 0.7 + (bar.value / 300),
+                }} />
+                <span className="text-xs text-on-surface-muted">{bar.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="lg:col-span-4">
-          <div className="bg-surface-container-low p-6 ghost-border h-full">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xs font-black uppercase tracking-widest">Atividade Recente</h3>
-            </div>
-            <div className="space-y-6">
-              {activities.map((a, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className={`w-2 h-2 mt-2 ${a.filled ? "bg-primary" : "border border-primary"}`}></div>
+        {/* Transactions */}
+        <div className="card-surface p-6">
+          <h2 className="font-heading text-lg font-semibold text-foreground mb-4">Transações Recentes</h2>
+          <div className="space-y-4">
+            {transactions.map((tx, i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-semibold text-primary">
+                    {tx.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  </div>
                   <div>
-                    <p className="text-xs font-bold leading-tight uppercase">{a.title}</p>
-                    <p className="text-xs text-outline mb-1">{a.desc}</p>
-                    <p className="text-[10px] font-mono text-outline/60 uppercase">{a.time}</p>
+                    <p className="text-sm font-medium text-foreground">{tx.name}</p>
+                    <p className="text-xs text-on-surface-muted">{tx.category}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-            <button className="w-full mt-8 border-t border-outline-variant/20 pt-4 text-[10px] font-black uppercase tracking-widest hover:text-primary transition-colors">
-              Ver Histórico Completo
-            </button>
+                <span className={`text-sm font-semibold ${tx.positive ? 'value-positive' : 'value-negative'}`}>
+                  {tx.value}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="mt-8 border-t border-outline-variant/20 pt-8">
-        <h3 className="text-xs font-black uppercase tracking-widest mb-6">Ações Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="bg-primary text-primary-foreground py-4 px-6 flex items-center justify-between hover:opacity-90 transition-opacity">
-            <span className="text-xs font-bold uppercase tracking-widest">Abrir/Fechar Caixa</span>
-          </button>
-          <button className="ghost-border-hover py-4 px-6 flex items-center justify-between transition-colors hover:bg-surface-container-high">
-            <span className="text-xs font-bold uppercase tracking-widest">Gerar Catálogo</span>
-          </button>
-          <button className="ghost-border-hover py-4 px-6 flex items-center justify-between transition-colors hover:bg-surface-container-high">
-            <span className="text-xs font-bold uppercase tracking-widest">Nova Malinha</span>
-          </button>
-          <button className="ghost-border-hover py-4 px-6 flex items-center justify-between transition-colors hover:bg-surface-container-high">
-            <span className="text-xs font-bold uppercase tracking-widest">Adicionar Cliente</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Hero Image */}
-      <div className="mt-12 w-full h-48 relative overflow-hidden grayscale contrast-125">
-        <img className="w-full h-full object-cover" src={heroImage} alt="Arquitetura" width={1920} height={512} />
-        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-          <p className="text-primary-foreground text-[10px] font-black tracking-[0.4em] uppercase">Arquitetura de Dados</p>
-        </div>
+      {/* Insight Banner */}
+      <div className="mt-6 rounded-xl p-6 bg-foreground text-primary-foreground">
+        <h3 className="font-heading text-lg font-semibold mb-1">💡 Insight do Dia</h3>
+        <p className="text-sm opacity-80">
+          Sua margem de lucro bruto está 3.2% acima da média do setor. Considere investir em campanhas de marketing para maximizar o crescimento durante a alta temporada.
+        </p>
       </div>
     </div>
   );

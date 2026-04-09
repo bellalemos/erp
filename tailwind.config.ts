@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        heading: ["Manrope", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,34 +53,19 @@ export default {
         },
         surface: {
           DEFAULT: "hsl(var(--surface))",
-          dim: "hsl(var(--surface-dim))",
-          "container-lowest": "hsl(var(--surface-container-lowest))",
-          "container-low": "hsl(var(--surface-container-low))",
-          container: "hsl(var(--surface-container))",
-          "container-high": "hsl(var(--surface-container-high))",
-          "container-highest": "hsl(var(--surface-container-highest))",
+          low: "hsl(var(--surface-low))",
+          lowest: "hsl(var(--surface-lowest))",
         },
+        tertiary: "hsl(var(--tertiary))",
+        error: "hsl(var(--error))",
         "on-surface": {
           DEFAULT: "hsl(var(--on-surface))",
-          variant: "hsl(var(--on-surface-variant))",
+          muted: "hsl(var(--on-surface-muted))",
         },
         outline: {
-          DEFAULT: "hsl(var(--outline))",
+          DEFAULT: "hsl(var(--outline-variant))",
           variant: "hsl(var(--outline-variant))",
         },
-        inverse: {
-          surface: "hsl(var(--inverse-surface))",
-          "on-surface": "hsl(var(--inverse-on-surface))",
-        },
-        error: {
-          DEFAULT: "hsl(var(--error))",
-          container: "hsl(var(--error-container))",
-        },
-        "on-error": {
-          DEFAULT: "hsl(var(--on-error))",
-          container: "hsl(var(--on-error-container))",
-        },
-        success: "hsl(var(--success))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -93,9 +79,13 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "var(--radius)",
-        sm: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
         DEFAULT: "var(--radius)",
+      },
+      boxShadow: {
+        card: "0 12px 32px -4px rgba(42, 52, 58, 0.08)",
+        modal: "0 24px 48px -8px rgba(42, 52, 58, 0.14)",
       },
       keyframes: {
         "accordion-down": {
