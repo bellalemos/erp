@@ -1,20 +1,14 @@
-import { useState } from "react";
-import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, Package, Activity } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, Package, Activity, Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const kpis = [
-  { label: "Total de SKUs", value: "1.240", icon: Package, chip: null },
-  { label: "Itens Críticos", value: "18", icon: AlertTriangle, chip: "chip-error" },
-  { label: "Movimentações Hoje", value: "47", icon: Activity, chip: "chip-info" },
-];
-
-const estoqueItems = [
-  { produto: "Luminária Mesa LED", sku: "LUM-001", categoria: "Eletrônicos", minimo: 10, atual: 42, status: "OK" },
-  { produto: "Camiseta Básica Preta", sku: "VES-012", categoria: "Vestuário", minimo: 20, atual: 8, status: "CRÍTICO" },
-  { produto: "Cadeira Escritório Pro", sku: "MOV-003", categoria: "Móveis", minimo: 5, atual: 15, status: "OK" },
-  { produto: "Fone Bluetooth Sport", sku: "ELE-045", categoria: "Eletrônicos", minimo: 15, atual: 3, status: "CRÍTICO" },
-  { produto: "Bolsa Couro Sintético", sku: "ACE-022", categoria: "Acessórios", minimo: 10, atual: 12, status: "ALERTA" },
-  { produto: "Mesa Lateral Madeira", sku: "MOV-018", categoria: "Móveis", minimo: 8, atual: 5, status: "CRÍTICO" },
-];
+type Product = {
+  id: string;
+  name: string;
+  sku: string;
+  category: string | null;
+  stock_quantity: number;
+};
 
 const historico = [
   { tipo: "entrada", produto: "LUM-001", qtd: "+50 un.", operador: "Maria S.", data: "09/04 14:30" },
@@ -23,17 +17,40 @@ const historico = [
   { tipo: "saida", produto: "ELE-045", qtd: "-8 un.", operador: "Carlos M.", data: "08/04 09:30" },
 ];
 
-function statusChip(status: string) {
-  switch (status) {
-    case "OK": return "chip-success";
-    case "ALERTA": return "chip-warning";
-    case "CRÍTICO": return "chip-error";
-    default: return "chip-info";
-  }
+function statusFor(qty: number) {
+  if (qty < 5) return { label: "CRÍTICO", chip: "chip-error" };
+  if (qty < 10) return { label: "ALERTA", chip: "chip-warning" };
+  return { label: "OK", chip: "chip-success" };
 }
 
 export default function Inventory() {
   const [tipoAjuste, setTipoAjuste] = useState<"entrada" | "saida">("entrada");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [search, setSearch] = useState("");
+  const [lowOnly, setLowOnly] = useState(false);
+
+  useEffect(() => {
+    supabase.from("products").select("id,name,sku,category,stock_quantity").eq("status", "ativo")
+      .then(({ data }) => setProducts((data as Product[]) || []));
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = products;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q));
+    }
+    if (lowOnly) list = list.filter(p => p.stock_quantity < 5);
+    return list;
+  }, [products, search, lowOnly]);
+
+  const lowCount = products.filter(p => p.stock_quantity < 5).length;
+
+  const kpis = [
+    { label: "Total de SKUs", value: String(products.length), icon: Package, chip: null },
+    { label: "Itens Críticos", value: String(lowCount), icon: AlertTriangle, chip: lowCount > 0 ? "chip-error" : null },
+    { label: "Movimentações Hoje", value: "47", icon: Activity, chip: "chip-info" },
+  ];
 
   return (
     <div>
@@ -59,31 +76,62 @@ export default function Inventory() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 card-surface p-6">
-          <h2 className="font-heading text-lg font-semibold text-foreground mb-5">Níveis de Estoque</h2>
+          <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+            <h2 className="font-heading text-lg font-semibold text-foreground">Níveis de Estoque</h2>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-muted" size={14} />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-surface-low rounded-lg pl-9 pr-3 py-2 text-sm placeholder:text-on-surface-muted outline-none border-none w-56"
+                  placeholder="Buscar por nome ou SKU..."
+                />
+              </div>
+              <button
+                onClick={() => setLowOnly(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  lowOnly ? "bg-error/10 text-error" : "bg-surface-low text-on-surface-muted hover:text-foreground"
+                }`}
+              >
+                <AlertTriangle size={14} /> Baixo estoque
+              </button>
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-on-surface-muted text-xs uppercase tracking-wide">
                   <th className="text-left py-3 font-medium">Produto / SKU</th>
                   <th className="text-center py-3 font-medium">Categoria</th>
-                  <th className="text-center py-3 font-medium">Mín.</th>
                   <th className="text-center py-3 font-medium">Atual</th>
                   <th className="text-center py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {estoqueItems.map((item) => (
-                  <tr key={item.sku}>
-                    <td className="py-4">
-                      <p className="font-medium text-foreground">{item.produto}</p>
-                      <p className="text-xs text-on-surface-muted">{item.sku}</p>
-                    </td>
-                    <td className="py-4 text-center"><span className="chip chip-info">{item.categoria}</span></td>
-                    <td className="py-4 text-center text-on-surface-muted">{item.minimo}</td>
-                    <td className={`py-4 text-center font-semibold ${item.atual <= item.minimo ? 'value-negative' : 'text-foreground'}`}>{item.atual}</td>
-                    <td className="py-4 text-center"><span className={`chip ${statusChip(item.status)}`}>{item.status}</span></td>
-                  </tr>
-                ))}
+                {filtered.map((item) => {
+                  const st = statusFor(item.stock_quantity);
+                  const low = item.stock_quantity < 5;
+                  return (
+                    <tr key={item.id} className={low ? "bg-error/5" : ""}>
+                      <td className="py-4">
+                        <div className="flex items-center gap-2">
+                          {low && <AlertTriangle size={14} className="text-error" />}
+                          <div>
+                            <p className={`font-medium ${low ? "text-error" : "text-foreground"}`}>{item.name}</p>
+                            <p className="text-xs text-on-surface-muted">{item.sku}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 text-center"><span className="chip chip-info">{item.category || "—"}</span></td>
+                      <td className={`py-4 text-center font-semibold ${low ? "text-error" : "text-foreground"}`}>{item.stock_quantity}</td>
+                      <td className="py-4 text-center"><span className={`chip ${st.chip}`}>{st.label}</span></td>
+                    </tr>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={4} className="py-8 text-center text-sm text-on-surface-muted">Nenhum produto encontrado</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -95,7 +143,7 @@ export default function Inventory() {
             <div className="space-y-4">
               <select className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none">
                 <option>Selecionar Produto</option>
-                {estoqueItems.map(i => <option key={i.sku}>{i.produto} ({i.sku})</option>)}
+                {products.map(i => <option key={i.id}>{i.name} ({i.sku})</option>)}
               </select>
               <div className="flex gap-2">
                 <button onClick={() => setTipoAjuste("entrada")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${tipoAjuste === "entrada" ? "bg-tertiary/10 text-tertiary" : "bg-surface-low text-on-surface-muted"}`}>
