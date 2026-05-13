@@ -48,12 +48,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="px-3 mt-auto space-y-1">
-          <div className="px-3 mb-4">
-            <button className="btn-primary w-full flex items-center justify-center gap-2 text-sm">
-              <Plus size={16} />
-              Novo Lançamento
-            </button>
-          </div>
           <a href="#" className="flex items-center gap-3 text-on-surface-muted hover:text-foreground px-4 py-2.5 rounded-[10px] text-sm transition-colors hover:bg-surface-lowest/60">
             <HelpCircle size={18} />
             <span>Suporte</span>
