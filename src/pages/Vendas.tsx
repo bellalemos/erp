@@ -1,5 +1,8 @@
-import { useState } from "react";
-import { Search, Filter, Plus, TrendingUp, ShoppingCart, Clock } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Filter, Plus, TrendingUp, ShoppingCart, Clock, X, Trash2, PlusCircle, Minus } from "lucide-react";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const kpis = [
   { label: "Vendas Totais", value: "R$ 84.230", change: "+12%", icon: TrendingUp },
@@ -17,13 +20,13 @@ const pedidos = [
 ];
 
 const weeklyPerf = [
-  { label: "Seg", value: 55 },
-  { label: "Ter", value: 70 },
-  { label: "Qua", value: 85 },
-  { label: "Qui", value: 60 },
-  { label: "Sex", value: 90 },
-  { label: "Sáb", value: 78 },
-  { label: "Dom", value: 35 },
+  { label: "Seg", value: 8420 },
+  { label: "Ter", value: 10750 },
+  { label: "Qua", value: 12450 },
+  { label: "Qui", value: 9100 },
+  { label: "Sex", value: 14280 },
+  { label: "Sáb", value: 11600 },
+  { label: "Dom", value: 5230 },
 ];
 
 const proximosPgtos = [
@@ -42,6 +45,12 @@ function statusChip(status: string) {
   }
 }
 
+const fmt = (v: number) =>
+  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+type Product = { id: string; name: string; sku: string; price: number; stock_quantity: number };
+type OrderItem = { product: Product; qty: number };
+
 export default function Vendas() {
   const [showModal, setShowModal] = useState(false);
 
@@ -57,7 +66,6 @@ export default function Vendas() {
         </button>
       </div>
 
-      {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         {kpis.map((kpi) => (
           <div key={kpi.label} className="card-surface p-5">
@@ -74,7 +82,6 @@ export default function Vendas() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Orders Table */}
         <div className="lg:col-span-2 card-surface p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-heading text-lg font-semibold text-foreground">Pedidos Recentes</h2>
@@ -100,7 +107,7 @@ export default function Vendas() {
             </thead>
             <tbody>
               {pedidos.map((p) => (
-                <tr key={p.id} className="group">
+                <tr key={p.id}>
                   <td className="py-4 font-medium text-foreground">{p.id}</td>
                   <td className="py-4 text-on-surface-muted">{p.data}</td>
                   <td className="py-4">
@@ -121,22 +128,35 @@ export default function Vendas() {
           </table>
         </div>
 
-        {/* Right panel */}
         <div className="space-y-5">
-          {/* Weekly Chart */}
           <div className="card-surface p-5">
             <h3 className="font-heading text-base font-semibold text-foreground mb-4">Desempenho Semanal</h3>
-            <div className="flex items-end gap-2 h-32">
-              {weeklyPerf.map((bar) => (
-                <div key={bar.label} className="flex-1 flex flex-col items-center gap-1.5">
-                  <div className="w-full rounded-t-md bg-secondary" style={{ height: `${bar.value * 1.2}px`, opacity: 0.7 + bar.value / 300 }} />
-                  <span className="text-[10px] text-on-surface-muted">{bar.label}</span>
-                </div>
-              ))}
+            <div className="h-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyPerf} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--on-surface-muted))', fontSize: 10 }} />
+                  <Tooltip
+                    cursor={{ fill: 'hsl(var(--surface-low))' }}
+                    contentStyle={{
+                      background: 'hsl(var(--surface-lowest))',
+                      border: 'none',
+                      borderRadius: '10px',
+                      boxShadow: '0 12px 32px -4px rgba(42,52,58,0.12)',
+                      fontSize: 12,
+                      padding: '8px 12px',
+                    }}
+                    formatter={(value: number) => [fmt(value), 'Vendas']}
+                  />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {weeklyPerf.map((_, i) => (
+                      <Cell key={i} fill="hsl(var(--secondary))" />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Próximos Pagamentos */}
           <div className="card-surface p-5">
             <h3 className="font-heading text-base font-semibold text-foreground mb-4">Próximos Pagamentos</h3>
             <div className="space-y-3">
@@ -157,48 +177,169 @@ export default function Vendas() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setShowModal(false)}>
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
-          <div className="relative bg-surface-lowest rounded-2xl shadow-modal p-8 w-full max-w-lg" onClick={e => e.stopPropagation()}>
-            <h2 className="font-heading text-xl font-bold text-foreground mb-6">Anotar Nova Venda</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-medium text-on-surface-muted uppercase tracking-wide block mb-1.5">Cliente</label>
-                <input className="bg-surface-lowest border-none border-b-2 border-b-border focus:border-b-secondary rounded-t-[10px] rounded-b-none px-4 py-2.5 text-sm w-full outline-none" placeholder="Nome do cliente" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-medium text-on-surface-muted uppercase tracking-wide block mb-1.5">Data</label>
-                  <input type="date" className="bg-surface-lowest border-none border-b-2 border-b-border focus:border-b-secondary rounded-t-[10px] rounded-b-none px-4 py-2.5 text-sm w-full outline-none" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-on-surface-muted uppercase tracking-wide block mb-1.5">Valor Total</label>
-                  <input className="bg-surface-lowest border-none border-b-2 border-b-border focus:border-b-secondary rounded-t-[10px] rounded-b-none px-4 py-2.5 text-sm w-full outline-none" placeholder="R$ 0,00" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-on-surface-muted uppercase tracking-wide block mb-1.5">Produtos / Itens</label>
-                <textarea className="bg-surface-lowest border-none border-b-2 border-b-border focus:border-b-secondary rounded-t-[10px] rounded-b-none px-4 py-2.5 text-sm w-full outline-none resize-none h-20" placeholder="Descreva os itens..." />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-on-surface-muted uppercase tracking-wide block mb-1.5">Condição de Pagamento</label>
-                <select className="bg-surface-lowest border-none border-b-2 border-b-border focus:border-b-secondary rounded-t-[10px] rounded-b-none px-4 py-2.5 text-sm w-full outline-none">
-                  <option>À Vista</option>
-                  <option>Cartão de Crédito</option>
-                  <option>Boleto</option>
-                  <option>PIX</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-8">
-              <button className="btn-secondary text-sm" onClick={() => setShowModal(false)}>Cancelar</button>
-              <button className="btn-primary text-sm" onClick={() => setShowModal(false)}>Salvar Venda</button>
-            </div>
+      {showModal && <NewSaleModal onClose={() => setShowModal(false)} />}
+    </div>
+  );
+}
+
+function NewSaleModal({ onClose }: { onClose: () => void }) {
+  const [clientName, setClientName] = useState("");
+  const [document, setDocument] = useState("");
+  const [category, setCategory] = useState("B2B Corporate");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [items, setItems] = useState<OrderItem[]>([]);
+  const [selectedSku, setSelectedSku] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("products").select("id,name,sku,price,stock_quantity").eq("status", "ativo")
+      .then(({ data }) => setProducts(data || []));
+  }, []);
+
+  const subtotal = useMemo(
+    () => items.reduce((s, it) => s + Number(it.product.price) * it.qty, 0),
+    [items]
+  );
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
+
+  const addProduct = () => {
+    const p = products.find(x => x.sku === selectedSku);
+    if (!p) return;
+    if (items.find(i => i.product.id === p.id)) return;
+    setItems([...items, { product: p, qty: 1 }]);
+    setSelectedSku("");
+  };
+
+  const updateQty = (id: string, delta: number) => {
+    setItems(items.map(i => i.product.id === id ? { ...i, qty: Math.max(1, Math.min(i.product.stock_quantity, i.qty + delta)) } : i));
+  };
+
+  const removeItem = (id: string) => setItems(items.filter(i => i.product.id !== id));
+
+  const completeOrder = async (draft = false) => {
+    if (!clientName.trim()) {
+      toast.error("Informe o nome do cliente");
+      return;
+    }
+    if (items.length === 0) {
+      toast.error("Adicione pelo menos um produto");
+      return;
+    }
+    setSaving(true);
+    // Upsert customer
+    const { data: existing } = await supabase.from("customers").select("id").eq("name", clientName).maybeSingle();
+    if (!existing) {
+      await supabase.from("customers").insert({ name: clientName, document, category });
+    }
+    setSaving(false);
+    toast.success(draft ? "Rascunho salvo" : "Pedido registrado");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" />
+      <div className="relative bg-surface-lowest rounded-2xl shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between p-6 pb-4">
+          <div>
+            <h2 className="font-heading text-xl font-bold text-foreground">Nova Venda</h2>
+            <p className="text-sm text-on-surface-muted mt-0.5">Insira os detalhes da transação abaixo.</p>
           </div>
+          <button onClick={onClose} className="p-1 text-on-surface-muted hover:text-foreground"><X size={20} /></button>
         </div>
-      )}
+
+        <div className="px-6 pb-6 space-y-6">
+          {/* Customer */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-3">Informações do Cliente</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-on-surface-muted block mb-1">Nome do Cliente</label>
+                <input value={clientName} onChange={e => setClientName(e.target.value)}
+                  className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none"
+                  placeholder="Buscar ou criar novo cliente..." />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-on-surface-muted block mb-1">Documento (CPF/CNPJ)</label>
+                  <input value={document} onChange={e => setDocument(e.target.value)}
+                    className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none"
+                    placeholder="000.000.000-00" />
+                </div>
+                <div>
+                  <label className="text-xs text-on-surface-muted block mb-1">Categoria</label>
+                  <select value={category} onChange={e => setCategory(e.target.value)}
+                    className="bg-surface-low rounded-lg px-4 py-2.5 text-sm w-full outline-none border-none">
+                    <option>B2B Corporate</option>
+                    <option>Retail Personal</option>
+                    <option>Wholesale</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Items */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-muted mb-3">Itens do Pedido</p>
+            <div className="space-y-3">
+              {items.map((it) => (
+                <div key={it.product.id} className="bg-surface-low rounded-xl p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-semibold text-foreground">{it.product.name}</p>
+                      <p className="text-xs text-on-surface-muted">SKU: {it.product.sku}</p>
+                    </div>
+                    <p className="font-semibold text-foreground">{fmt(Number(it.product.price))}</p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => updateQty(it.product.id, -1)} className="w-8 h-8 rounded-md bg-surface-lowest flex items-center justify-center text-on-surface-muted hover:text-foreground"><Minus size={14} /></button>
+                      <span className="w-8 text-center text-sm font-medium">{String(it.qty).padStart(2, '0')}</span>
+                      <button onClick={() => updateQty(it.product.id, 1)} className="w-8 h-8 rounded-md bg-surface-lowest flex items-center justify-center text-on-surface-muted hover:text-foreground"><Plus size={14} /></button>
+                      <span className="text-xs text-on-surface-muted ml-2">Estoque disponível: {it.product.stock_quantity} un.</span>
+                    </div>
+                    <button onClick={() => removeItem(it.product.id)} className="text-error hover:opacity-70"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <select value={selectedSku} onChange={e => setSelectedSku(e.target.value)} className="bg-surface-low rounded-lg px-4 py-2.5 text-sm flex-1 outline-none border-none">
+                  <option value="">Selecionar produto...</option>
+                  {products.filter(p => !items.find(i => i.product.id === p.id)).map(p => (
+                    <option key={p.id} value={p.sku}>{p.name} — {fmt(Number(p.price))}</option>
+                  ))}
+                </select>
+                <button onClick={addProduct} disabled={!selectedSku} className="btn-secondary text-sm flex items-center gap-2 disabled:opacity-40">
+                  <PlusCircle size={16} /> Adicionar Produto
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Totals */}
+          <section className="bg-surface-low rounded-xl p-5 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-muted">Subtotal</span>
+              <span className="text-foreground font-medium">{fmt(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-muted">Imposto (Serviço 5%)</span>
+              <span className="text-foreground font-medium">{fmt(tax)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 mt-2 border-t border-border">
+              <span className="font-heading text-base font-bold text-foreground">Total</span>
+              <span className="font-heading text-2xl font-bold text-primary">{fmt(total)}</span>
+            </div>
+          </section>
+        </div>
+
+        <div className="flex justify-end gap-3 px-6 py-4 bg-surface-low/40 rounded-b-2xl">
+          <button className="btn-secondary text-sm" disabled={saving} onClick={() => completeOrder(true)}>Salvar como rascunho</button>
+          <button className="btn-primary text-sm" disabled={saving} onClick={() => completeOrder(false)}>Concluir Pedido</button>
+        </div>
+      </div>
     </div>
   );
 }
