@@ -14,7 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      customers: {
+        Row: {
+          category: string
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          status: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      financial_schedules: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string | null
+          description: string
+          due_date: string
+          id: string
+          status: string
+          type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          customer_id?: string | null
+          description: string
+          due_date: string
+          id?: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string | null
+          description?: string
+          due_date?: string
+          id?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_schedules_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          price: number
+          sku: string
+          status: string
+          stock_quantity: number
+          tags: string[]
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          price?: number
+          sku: string
+          status?: string
+          stock_quantity?: number
+          tags?: string[]
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          sku?: string
+          status?: string
+          stock_quantity?: number
+          tags?: string[]
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
