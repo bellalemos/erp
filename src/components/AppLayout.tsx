@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, Boxes, Settings,
-  Search, Bell, HelpCircle, LogOut, Plus, UserCircle
+  Search, Bell, HelpCircle, LogOut,
 } from "lucide-react";
 
 const navItems = [
