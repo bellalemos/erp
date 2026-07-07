@@ -1,71 +1,46 @@
-# Backend + Refinamentos de UI
+# Correções e melhorias do ERP
 
 ## Resumo
 
-Ativar Supabase para persistir dados (produtos/estoque, clientes, agendamentos financeiros), remover botão "Novo Lançamento" do sidebar, substituir modais de Nova Venda e Novo Produto pelas referências enviadas, e adicionar busca + filtro de baixo estoque + tooltip no gráfico semanal.
+NUNCA ativar autenticação do Lovable Cloud, mas do supabase apenas, tornar botões funcionais, refatorar experiências de edição, sincronizar dados em tempo real e permitir editar/excluir categorias.
 
-## 1. Backend (Lovable Cloud)
+## 1. Financeiro — Novo Agendamento funcional
 
-Ativar Supabase e criar tabelas:
+- Botão "Novo Agendamento" (topo e card lateral) abre drawer lateral direito com formulário:
+  - Descrição, Valor, Data de vencimento, Tipo (a receber / a pagar), Status, Cliente (opcional, busca em `customers`).
+- Grava em `financial_schedules` e recarrega lista automaticamente.
+- Clicar em um item de "Próximos Vencimentos" ou linha de "Atividade Recente" reabre o mesmo drawer no modo edição (pré-preenchido). Botão "Excluir" no drawer de edição.
+- Substituir dados mockados de vencimentos e atividade por leitura real de `financial_schedules`.
 
-`**products**` (produtos + estoque na mesma tabela)
+## 2. Produtos — Edição no mesmo drawer
 
-- `id` uuid pk, `name` text, `sku` text unique, `category` text, `price` numeric, `stock_quantity` int, `unit` text (UN/KG/CX/LT), `tags` text[], `status` text ('ativo'|'inativo'), `created_at`, `updated_at`
+- Manter listagem grid/lista como está.
+- Clicar em um card ou linha abre o **mesmo drawer lateral** de "Novo Produto", pré-preenchido, com título "Editar Produto" e botão adicional "Excluir".
+- Após salvar, o fetch (`load()`) é chamado para refletir imediatamente.
 
-`**product_categories**`
+## 3. Categorias — Editar e excluir
 
-- `id` uuid pk, `name` text unique, `created_at`
-- Permite cadastrar novas categorias dinamicamente no modal
+- Ao lado do botão "+ Nova" no drawer de produto, adicionar ícone discreto de lápis (`Pencil`) que abre um mini-gerenciador inline: lista das categorias com input editável e ícone de lixeira em cada uma.
+- Renomear = `update` em `product_categories`; excluir = `delete` (bloqueia se houver produtos vinculados, com toast de aviso).
 
-`**customers**`
+## 4. Vendas — Data atual + sincronização
 
-- `id` uuid pk, `name` text, `document` text (CPF/CNPJ), `category` text (B2B/Retail/Wholesale), `email` text, `phone` text, `status` text, `created_at`
+- Adicionar data atual no topo da página "Gestão de Vendas" (ex.: "Terça, 07 de julho de 2026", `date-fns` locale pt-BR — já disponível).
+- Substituir array `pedidos` mockado por leitura da tabela `sales` (nova, ver seção 6). Após concluir venda no modal, refazer fetch.
+- Gráfico "Desempenho Semanal": calcular somatório por dia da semana atual a partir de `sales.created_at` no lugar do array estático. KPIs (Vendas Totais, Pedidos Pendentes, Ticket Médio) também calculados dos dados reais.
+- KPIs do Dashboard passam a ler dos mesmos dados para ficarem sincronizados.
 
-`**financial_schedules**` (agendamentos financeiros)
+## 5. Tabela `sales` (nova)
 
-- `id` uuid pk, `description` text, `amount` numeric, `due_date` date, `type` text ('receber'|'pagar'), `status` text ('pendente'|'agendado'|'pago'|'cancelado'), `customer_id` uuid fk null, `created_at`
-
-RLS: como ainda não há autenticação, políticas abertas (`true`) para leitura/escrita autenticada anônima — pode ser endurecido depois quando login for adicionado.
-
-## 2. Sidebar (`AppLayout.tsx`)
-
-- Remover o botão CTA "Novo Lançamento" do rodapé do sidebar.
-
-## 3. Modal Nova Venda (`Vendas.tsx`)
-
-Substituir o modal atual por versão drawer/centralizado conforme referência:
-
-- Seção **Customer Information**: Client Name (busca/criação de cliente em `customers`), Document (CPF/CNPJ), Category (B2B Corporate / Retail Personal / Wholesale)
-- Seção **Order Items**: card com produto (nome + License Code/SKU), preço, controle de quantidade (− 01 +), "Stock available: X units" puxando de `products`, ícone delete; botão "+ Add Another Product"
-- Resumo: Subtotal, Tax (Service 5%), **Total** em destaque azul
-- Botões: "Save as Draft" (secundário) + "Complete Order" (primário azul)
-
-## 4. Modal Novo Produto → Drawer lateral direito (`Produtos.tsx`)
-
-Substituir modal por drawer deslizante na lateral direita conforme referência Echelon ERP:
-
-- Header: "Novo Produto" + subtítulo "Adicione um novo item ao seu catálogo mestre" + botão close
-- Campos: Nome do Produto, SKU, **Categoria** (select carregando de `product_categories` + opção "Adicionar nova categoria" inline), Preço de Venda (prefixo R$), Quantidade em Estoque, Unidade de Medida (UN/KG/CX/LT), Tags do Produto (chips removíveis, Enter para adicionar)
-- Footer: "Cancelar" + "Cadastrar Produto" (insere em `products` com `status='ativo'`)
-
-## 5. Estoque (`Inventory.tsx`)
-
-- Adicionar **campo de busca** no topo da tabela (filtra por nome/SKU)
-- Adicionar **toggle/filtro "Baixo estoque"** que mostra apenas produtos com `stock_quantity < 5`
-- Linhas com estoque < 5 destacadas em **vermelho** com ícone de alerta
-- Carregar dados reais de `products`
-
-## 6. Gráfico Desempenho Semanal (`Vendas.tsx`)
-
-- Adicionar **tooltip on hover** mostrando dia + valor real (ex: "Quarta · R$ 12.450")
-- Implementar com Recharts (BarChart + Tooltip) substituindo as divs estáticas atuais
+- Colunas: customer_id, customer_name (snapshot), items (jsonb: [{product_id, name, sku, price, qty}]), subtotal, tax, total, status ('pago'|'pendente'|'cancelado'|'rascunho'), user_id, created_at.
+- RLS: `authenticated` pode ler/inserir/atualizar tudo (multi-tenant simples inicialmente).
+- Modal Nova Venda passa a inserir em `sales` (hoje só grava cliente).
 
 ## Detalhes técnicos
 
-- Instalar Recharts (já presente no shadcn). Usar `<ChartContainer>` de `components/ui/chart.tsx`
-- Criar `src/integrations/supabase/client.ts` (auto via Cloud)
-- Hooks de fetch com TanStack Query (`useQuery`/`useMutation`) por entidade
-- Drawer: usar `components/ui/sheet.tsx` (Radix Sheet) com `side="right"`
-- Modal Nova Venda: `components/ui/dialog.tsx` com largura ~600px
-- Validação com zod nos formulários
-- Seed opcional: inserir algumas categorias padrão (Eletrônicos, Vestuário, Casa & Jardim, Escritório)
+- Fluxo: migração cria `sales` + `profiles` + trigger `handle_new_user` + GRANTs corretos + ajusta policies das tabelas existentes para `TO authenticated USING (true)`.
+- `supabase--configure_auth` para habilitar auto-confirm de email (desenvolvimento) e desabilitar signups anônimos.
+- `supabase--configure_social_auth` para Google.
+- Reuso de componentes: drawer lateral do Produtos vira componente compartilhado com modo `create` | `edit`.
+- Toasts via `sonner` (já instalado).
+- `date-fns` já está no projeto (usado pelo shadcn) — usar `format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })`.
